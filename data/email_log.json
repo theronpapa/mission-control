@@ -1,0 +1,167 @@
+[
+  {
+    "leadId": "LEAD-001",
+    "company": "TechVision Sdn Bhd",
+    "email": "info@techvision.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-002",
+    "company": "Nusantara Foods",
+    "email": "contact@nusantarafoods.com",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-003",
+    "company": "AutoParts Malaysia",
+    "email": "sales@autoparts.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": false,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-004",
+    "company": "Batik Boutique KL",
+    "email": "hello@batikboutique.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": false,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-005",
+    "company": "GreenMed Wellness",
+    "email": "enquiry@greenmed.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": false,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-006",
+    "company": "BuildRight Construction",
+    "email": "projects@buildright.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-007",
+    "company": "Skynet Digital",
+    "email": "biz@skynetdigital.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": false,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-008",
+    "company": "Rasa Utama Catering",
+    "email": "order@rasautama.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-009",
+    "company": "EV Motors MY",
+    "email": "info@evmotors.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-010",
+    "company": "Silk & Thread",
+    "email": "design@silkthread.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-011",
+    "company": "HerbaCare Malaysia",
+    "email": "support@herbacare.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-012",
+    "company": "MegaBuild Systems",
+    "email": "tender@megabuild.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-013",
+    "company": "CloudFirst Asia",
+    "email": "hello@cloudfirst.asia",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-014",
+    "company": "Warung Digital",
+    "email": "info@warungdigital.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": false,
+    "bounced": false,
+    "followupSent": false
+  },
+  {
+    "leadId": "LEAD-015",
+    "company": "Proton Accessories",
+    "email": "shop@protonaccs.my",
+    "sentAt": "2026-04-17T03:06:25.201Z",
+    "status": "sent",
+    "opened": true,
+    "replied": true,
+    "bounced": false,
+    "followupSent": false
+  }
+]

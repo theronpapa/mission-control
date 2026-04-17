@@ -1,0 +1,16 @@
+id,company,email,phone,industry,website,status,scraped_at
+LEAD-001,TechVision Sdn Bhd,info@techvision.my,+60 3-1234 5678,Technology,techvision.my,new,2026-04-17T03:06:19.840Z
+LEAD-002,Nusantara Foods,contact@nusantarafoods.com,+60 3-2345 6789,Food & Beverage,nusantarafoods.com,new,2026-04-17T03:06:19.840Z
+LEAD-003,AutoParts Malaysia,sales@autoparts.my,+60 3-3456 7890,Automotive,autoparts.my,new,2026-04-17T03:06:19.840Z
+LEAD-004,Batik Boutique KL,hello@batikboutique.my,+60 3-4567 8901,Fashion & Textiles,batikboutique.my,new,2026-04-17T03:06:19.840Z
+LEAD-005,GreenMed Wellness,enquiry@greenmed.my,+60 3-5678 9012,Health & Wellness,greenmed.my,new,2026-04-17T03:06:19.840Z
+LEAD-006,BuildRight Construction,projects@buildright.my,+60 3-6789 0123,Construction,buildright.my,new,2026-04-17T03:06:19.840Z
+LEAD-007,Skynet Digital,biz@skynetdigital.my,+60 3-7890 1234,Technology,skynetdigital.my,new,2026-04-17T03:06:19.840Z
+LEAD-008,Rasa Utama Catering,order@rasautama.my,+60 3-8901 2345,Food & Beverage,rasautama.my,new,2026-04-17T03:06:19.840Z
+LEAD-009,EV Motors MY,info@evmotors.my,+60 3-9012 3456,Automotive,evmotors.my,new,2026-04-17T03:06:19.840Z
+LEAD-010,Silk & Thread,design@silkthread.my,+60 3-0123 4567,Fashion & Textiles,silkthread.my,new,2026-04-17T03:06:19.840Z
+LEAD-011,HerbaCare Malaysia,support@herbacare.my,+60 3-1111 2222,Health & Wellness,herbacare.my,new,2026-04-17T03:06:19.840Z
+LEAD-012,MegaBuild Systems,tender@megabuild.my,+60 3-3333 4444,Construction,megabuild.my,new,2026-04-17T03:06:19.840Z
+LEAD-013,CloudFirst Asia,hello@cloudfirst.asia,+60 3-5555 6666,Technology,cloudfirst.asia,new,2026-04-17T03:06:19.840Z
+LEAD-014,Warung Digital,info@warungdigital.my,+60 3-7777 8888,Food & Beverage,warungdigital.my,new,2026-04-17T03:06:19.840Z
+LEAD-015,Proton Accessories,shop@protonaccs.my,+60 3-9999 0000,Automotive,protonaccs.my,new,2026-04-17T03:06:19.840Z
