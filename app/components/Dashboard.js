@@ -8,6 +8,7 @@ import WarmupPanel from './WarmupPanel';
 import AnalyticsPanel from './AnalyticsPanel';
 import SavedSearchesPanel from './SavedSearchesPanel';
 import ProspectorPanel from './ProspectorPanel';
+import DataHealthPanel from './DataHealthPanel';
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1' },
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { id: 'abtest', label: 'A/B Tests', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
   { id: 'warmup', label: 'Email Warmup', icon: 'M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z' },
   { id: 'prospector', label: 'Prospector', icon: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' },
+  { id: 'health', label: 'Data Health', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
   { id: 'saved', label: 'Smart Lists', icon: 'M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z' },
 ];
 
@@ -54,6 +56,7 @@ export default function Dashboard() {
         {activePage === 'abtest' && <ABTestPanel key={refreshKey} showToast={showToast} />}
         {activePage === 'warmup' && <WarmupPanel key={refreshKey} showToast={showToast} />}
         {activePage === 'prospector' && <ProspectorPanel key={refreshKey} showToast={showToast} onDataChange={onDataChange} />}
+        {activePage === 'health' && <DataHealthPanel key={refreshKey} showToast={showToast} onDataChange={onDataChange} />}
         {activePage === 'saved' && <SavedSearchesPanel key={refreshKey} showToast={showToast} />}
       </main>
 

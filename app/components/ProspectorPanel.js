@@ -3,12 +3,21 @@ import { useState } from 'react';
 import { addContacts as storeAddContacts } from '../lib/store';
 
 const INDUSTRIES = [
-  'automotive','banking','biotechnology','computer software','construction','consumer electronics',
+  'agriculture','automotive','banking','biotechnology','computer software','construction','consumer electronics',
   'e-commerce','education','energy & utilities','entertainment','financial services','food & beverages',
   'health care','hospitality','information technology & services','insurance','internet','legal services',
   'logistics & supply chain','manufacturing','marketing & advertising','media & communications',
   'mining & metals','nonprofit','oil & energy','pharmaceuticals','real estate','restaurants',
   'retail','semiconductors','staffing & recruiting','telecommunications','transportation','venture capital',
+];
+
+const ROLE_EMAILS = [
+  { role: 'CEO', prefixes: ['ceo'] },
+  { role: 'CTO', prefixes: ['cto'] },
+  { role: 'CFO', prefixes: ['cfo'] },
+  { role: 'Head of Sales', prefixes: ['sales', 'head.sales'] },
+  { role: 'VP Marketing', prefixes: ['marketing', 'vp.marketing'] },
+  { role: 'General Inquiry', prefixes: ['info', 'contact', 'hello'] },
 ];
 
 const EMPLOYEE_RANGES = [
@@ -61,6 +70,10 @@ export default function ProspectorPanel({ showToast, onDataChange }) {
   const [genName, setGenName] = useState('');
   const [genTitle, setGenTitle] = useState('');
   const [generatedEmails, setGeneratedEmails] = useState([]);
+  // Bulk contact generation
+  const [showBulkGenerate, setShowBulkGenerate] = useState(false);
+  const [bulkContacts, setBulkContacts] = useState([]);
+  const [bulkSelected, setBulkSelected] = useState(new Set());
 
   const handleSearch = async (p = 1) => {
     if (!industry && !query) return showToast('Select an industry or enter a company name', 'error');
@@ -157,6 +170,50 @@ export default function ProspectorPanel({ showToast, onDataChange }) {
     onDataChange?.();
   };
 
+  const handleBulkGenerate = () => {
+    const orgs = selectedOrgs.size > 0 ? results.filter(o => selectedOrgs.has(o.id)) : results;
+    const generated = [];
+    orgs.forEach(org => {
+      if (!org.domain) return;
+      ROLE_EMAILS.forEach(({ role, prefixes }) => {
+        prefixes.forEach(prefix => {
+          generated.push({
+            email: `${prefix}@${org.domain}`,
+            firstName: role,
+            lastName: '',
+            company: org.name,
+            title: role,
+            domain: org.domain,
+            industry: org.industry,
+          });
+        });
+      });
+    });
+    setBulkContacts(generated);
+    setBulkSelected(new Set(generated.map((_, i) => i)));
+    setShowBulkGenerate(true);
+  };
+
+  const handleAddBulkContacts = () => {
+    const toAdd = bulkContacts.filter((_, i) => bulkSelected.has(i));
+    const result = storeAddContacts(toAdd.map(c => ({
+      email: c.email,
+      firstName: c.firstName,
+      lastName: c.lastName,
+      company: c.company,
+      title: c.title,
+      tags: ['prospected', 'bulk-generated'],
+      source: 'apollo-bulk',
+    })));
+    showToast(`Added ${result.added} contacts (${result.duplicates} duplicates skipped)`);
+    setShowBulkGenerate(false);
+    setBulkContacts([]);
+    setBulkSelected(new Set());
+    onDataChange?.();
+  };
+
+  const toggleBulkItem = (i) => { const n = new Set(bulkSelected); n.has(i) ? n.delete(i) : n.add(i); setBulkSelected(n); };
+
   const toggleOrg = (id) => { const n = new Set(selectedOrgs); n.has(id) ? n.delete(id) : n.add(id); setSelectedOrgs(n); };
 
   return (
@@ -205,6 +262,7 @@ export default function ProspectorPanel({ showToast, onDataChange }) {
               <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '12px' }}>Page {page} of {totalPages}</span>
             </div>
             <div className="btn-group">
+              <button className="btn btn-sm btn-success" onClick={handleBulkGenerate}>Generate All Contacts{selectedOrgs.size > 0 ? ` (${selectedOrgs.size})` : ''}</button>
               {selectedOrgs.size > 0 && <button className="btn btn-sm btn-primary" onClick={handleBulkAdd}>Add {selectedOrgs.size} to Contacts</button>}
               {page > 1 && <button className="btn btn-sm btn-secondary" onClick={() => handleSearch(page - 1)}>Prev</button>}
               {page < totalPages && <button className="btn btn-sm btn-secondary" onClick={() => handleSearch(page + 1)}>Next</button>}
@@ -296,6 +354,39 @@ export default function ProspectorPanel({ showToast, onDataChange }) {
           <div className="empty-state">
             <p style={{ fontSize: '16px', marginBottom: '8px' }}>Search for companies by industry</p>
             <p>Select an industry above and hit Search. You can then enrich companies, generate email addresses, and add them to your contacts.</p>
+          </div>
+        </div>
+      )}
+
+      {showBulkGenerate && (
+        <div className="modal-overlay" onClick={() => setShowBulkGenerate(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <h3 className="modal-title">Bulk Generate Decision-Maker Contacts</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>
+              Generated {bulkContacts.length} role-based emails for {new Set(bulkContacts.map(c => c.company)).size} companies.
+              Uncheck any you don't want to add.
+            </p>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <button className="btn btn-sm btn-secondary" onClick={() => setBulkSelected(new Set(bulkContacts.map((_, i) => i)))}>Select All</button>
+              <button className="btn btn-sm btn-secondary" onClick={() => setBulkSelected(new Set())}>Deselect All</button>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', alignSelf: 'center' }}>{bulkSelected.size} selected</span>
+            </div>
+            <div style={{ maxHeight: '400px', overflowY: 'auto', marginBottom: '16px' }}>
+              <table><thead><tr><th></th><th>Email</th><th>Role</th><th>Company</th></tr></thead>
+                <tbody>{bulkContacts.map((c, i) => (
+                  <tr key={i}>
+                    <td><input type="checkbox" checked={bulkSelected.has(i)} onChange={() => toggleBulkItem(i)} /></td>
+                    <td style={{ fontSize: '12px', fontFamily: 'monospace' }}>{c.email}</td>
+                    <td><span className="badge badge-blue">{c.title}</span></td>
+                    <td style={{ fontSize: '12px' }}>{c.company}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+            <div className="btn-group">
+              <button className="btn btn-primary" onClick={handleAddBulkContacts}>Add {bulkSelected.size} Contacts</button>
+              <button className="btn btn-secondary" onClick={() => setShowBulkGenerate(false)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}

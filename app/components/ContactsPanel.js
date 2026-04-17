@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { getContacts, saveContacts, addContacts as storeAddContacts } from '../lib/store';
+import { getContacts, saveContacts, addContacts as storeAddContacts, getSentEmails, saveSentEmails, getReplyStatuses, saveReplyStatuses } from '../lib/store';
 
 function validateEmailFormat(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -68,9 +68,11 @@ export default function ContactsPanel({ showToast, onDataChange }) {
   const [newTag, setNewTag] = useState('');
   const [scrapeUrl, setScrapeUrl] = useState('');
   const [scraping, setScraping] = useState(false);
+  const [checkingReplies, setCheckingReplies] = useState(false);
+  const [replyStatuses, setReplyStatuses] = useState({});
   const fileRef = useRef();
 
-  const reload = () => { setContacts(getContacts()); };
+  const reload = () => { setContacts(getContacts()); setReplyStatuses(getReplyStatuses()); };
   useEffect(() => { reload(); }, []);
 
   const handleImportCSV = (e) => {
@@ -195,6 +197,53 @@ export default function ContactsPanel({ showToast, onDataChange }) {
     reload();
   };
 
+  const handleCheckReplies = async () => {
+    setCheckingReplies(true);
+    try {
+      const sentEmails = getSentEmails();
+      const threadIds = [...new Set(sentEmails.filter(e => e.threadId).map(e => e.threadId))];
+      if (threadIds.length === 0) { showToast('No sent emails with thread IDs to check', 'error'); return; }
+      const res = await fetch('/api/email/replies', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ threadIds }),
+      });
+      const data = await res.json();
+      if (data.error) { showToast(data.error, 'error'); return; }
+      const replies = data.replies || [];
+      // Map replies back to contacts via sent emails
+      const statuses = getReplyStatuses();
+      const updatedEmails = [...sentEmails];
+      let replyCount = 0;
+      replies.forEach(reply => {
+        const sentEmail = sentEmails.find(e => e.threadId === reply.threadId);
+        if (sentEmail) {
+          const idx = updatedEmails.findIndex(e => e.id === sentEmail.id);
+          if (idx >= 0) updatedEmails[idx] = { ...updatedEmails[idx], replied: true };
+          const contactEmail = sentEmail.to?.toLowerCase();
+          if (contactEmail) {
+            statuses[contactEmail] = { sentiment: reply.sentiment, snippet: reply.snippet, receivedAt: reply.receivedAt };
+            replyCount++;
+          }
+        }
+      });
+      saveSentEmails(updatedEmails);
+      saveReplyStatuses(statuses);
+      // Auto-tag contacts based on sentiment
+      const updated = contacts.map(c => {
+        const status = statuses[c.email?.toLowerCase()];
+        if (!status) return c;
+        const sentimentTag = `reply:${status.sentiment}`;
+        const tags = [...new Set([...(c.tags || []), sentimentTag])];
+        return { ...c, tags };
+      });
+      saveContacts(updated);
+      showToast(`Found ${replyCount} replies. Contacts auto-tagged.`);
+      reload();
+    } catch (err) { showToast(err.message, 'error'); }
+    finally { setCheckingReplies(false); }
+  };
+
   const toggleSelect = (id) => { const next = new Set(selected); next.has(id) ? next.delete(id) : next.add(id); setSelected(next); };
   const toggleAll = () => { selected.size === filtered.length ? setSelected(new Set()) : setSelected(new Set(filtered.map(c => c.id))); };
 
@@ -209,6 +258,7 @@ export default function ContactsPanel({ showToast, onDataChange }) {
 
   const tierBadge = (tier) => { const map = { hot: 'badge-red', warm: 'badge-orange', cool: 'badge-blue', cold: 'badge-gray' }; return tier ? <span className={`badge ${map[tier] || 'badge-gray'}`}>{tier}</span> : null; };
   const verifiedBadge = (v) => { const map = { valid: 'badge-green', risky: 'badge-yellow', invalid: 'badge-red' }; return v ? <span className={`badge ${map[v] || 'badge-gray'}`}>{v}</span> : null; };
+  const replyBadge = (email) => { const s = replyStatuses[email?.toLowerCase()]; if (!s) return null; const map = { interested: 'badge-green', not_interested: 'badge-red', out_of_office: 'badge-yellow', bounced: 'badge-red', neutral: 'badge-gray' }; return <span className={`badge ${map[s.sentiment] || 'badge-gray'}`} title={s.snippet}>{s.sentiment.replace('_', ' ')}</span>; };
 
   return (
     <div>
@@ -223,6 +273,7 @@ export default function ContactsPanel({ showToast, onDataChange }) {
           <button className="btn btn-secondary" onClick={handleVerifyAll} disabled={contacts.length === 0}>Verify All</button>
           <button className="btn btn-secondary" onClick={handleEnrichAll} disabled={contacts.length === 0}>Enrich All</button>
           <button className="btn btn-secondary" onClick={handleScoreAll} disabled={contacts.length === 0}>Score All</button>
+          <button className="btn btn-secondary" onClick={handleCheckReplies} disabled={contacts.length === 0 || checkingReplies}>{checkingReplies ? <><span className="spinner" /> Checking...</> : 'Check Replies'}</button>
         </div>
       </div>
       <div className="card" style={{ marginBottom: '16px' }}>
@@ -257,7 +308,7 @@ export default function ContactsPanel({ showToast, onDataChange }) {
             <table>
               <thead><tr>
                 <th><input type="checkbox" checked={selected.size === filtered.length && filtered.length > 0} onChange={toggleAll} /></th>
-                <th>Name</th><th>Email</th><th>Company</th><th>Title</th><th>Verified</th><th>Score</th><th>Tier</th><th>Tags</th>
+                <th>Name</th><th>Email</th><th>Company</th><th>Title</th><th>Verified</th><th>Reply</th><th>Score</th><th>Tier</th><th>Tags</th>
               </tr></thead>
               <tbody>
                 {filtered.map(c => (
@@ -268,6 +319,7 @@ export default function ContactsPanel({ showToast, onDataChange }) {
                     <td>{c.company || '-'}</td>
                     <td>{c.title || '-'}</td>
                     <td>{verifiedBadge(c.verified)}</td>
+                    <td>{replyBadge(c.email)}</td>
                     <td>
                       <div className="score-bar">
                         <div className="progress-bar" style={{ width: '60px' }}>

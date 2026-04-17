@@ -58,3 +58,36 @@ export function saveABTests(tests) { set('ab_tests', tests); }
 // Warmup
 export function getWarmup() { return get('warmup', {}); }
 export function saveWarmup(data) { set('warmup', data); }
+
+// Reply statuses
+export function getReplyStatuses() { return get('reply_statuses', {}); }
+export function saveReplyStatuses(data) { set('reply_statuses', data); }
+
+// Workflow triggers
+export function getTriggers() { return get('triggers', []); }
+export function saveTriggers(triggers) { set('triggers', triggers); }
+
+// Check triggers and auto-enroll contacts
+export function checkTriggers(contact) {
+  const triggers = getTriggers();
+  const sequences = getSequences();
+  let enrolled = 0;
+  triggers.forEach(trigger => {
+    let match = false;
+    if (trigger.field === 'tag' && (contact.tags || []).includes(trigger.value)) match = true;
+    if (trigger.field === 'leadTier' && contact.leadTier === trigger.value) match = true;
+    if (trigger.field === 'source' && contact.source === trigger.value) match = true;
+    if (trigger.field === 'verified' && contact.verified === trigger.value) match = true;
+    if (match) {
+      const updated = sequences.map(s => {
+        if (s.id !== trigger.sequenceId) return s;
+        const existing = new Set((s.contacts || []).map(c => c.email));
+        if (existing.has(contact.email)) return s;
+        return { ...s, contacts: [...(s.contacts || []), { ...contact, currentStep: 0, status: 'active', enrolledAt: new Date().toISOString() }] };
+      });
+      saveSequences(updated);
+      enrolled++;
+    }
+  });
+  return enrolled;
+}
