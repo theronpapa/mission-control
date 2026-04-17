@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: [],
+  /* config options here */
 };
 
 export default nextConfig;
