@@ -1,9 +1,9 @@
 "use client";
 
 const stages = [
-  { id: "leads", label: "Scrape", icon: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" },
+  { id: "leads", label: "Contacts", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857" },
   { id: "email", label: "Email", icon: "M3 8l7.89 5.26a2 2 0 002.22 0L21 8" },
-  { id: "followup", label: "Follow-up", icon: "M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" },
+  { id: "pipeline", label: "Pipeline", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2" },
   { id: "qr", label: "Register", icon: "M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01" },
   { id: "video", label: "Video", icon: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14" },
 ];

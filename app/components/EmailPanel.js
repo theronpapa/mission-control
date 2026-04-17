@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 
 export default function EmailPanel() {
-  const [stats, setStats] = useState({ sent: 0, opened: 0, replied: 0, bounced: 0, followups: 0 });
+  const [stats, setStats] = useState({ total: 0, stages: {}, sent: 0, followups: 0, replied: 0 });
   const [sending, setSending] = useState(false);
-  const [followingUp, setFollowingUp] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+  const [limit, setLimit] = useState(10);
 
   useEffect(() => {
     fetchStats();
@@ -23,32 +24,28 @@ export default function EmailPanel() {
 
   async function sendCampaign() {
     setSending(true);
+    setSendResult(null);
     try {
-      await fetch("/api/email/send", { method: "POST" });
+      const res = await fetch("/api/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ limit }),
+      });
+      const data = await res.json();
+      setSendResult(data);
       await fetchStats();
-    } catch {
-      /* ignore */
+    } catch (err) {
+      setSendResult({ error: err.message });
     }
     setSending(false);
   }
 
-  async function sendFollowups() {
-    setFollowingUp(true);
-    try {
-      await fetch("/api/email/followup", { method: "POST" });
-      await fetchStats();
-    } catch {
-      /* ignore */
-    }
-    setFollowingUp(false);
-  }
-
   const statItems = [
-    { label: "Sent", value: stats.sent, color: "text-indigo-400" },
-    { label: "Opened", value: stats.opened, color: "text-emerald-400" },
-    { label: "Replied", value: stats.replied, color: "text-amber-400" },
-    { label: "Bounced", value: stats.bounced, color: "text-rose-400" },
-    { label: "Follow-ups", value: stats.followups, color: "text-purple-400" },
+    { label: "Total Contacts", value: stats.total, color: "text-slate-300" },
+    { label: "Emails Sent", value: stats.sent, color: "text-indigo-400" },
+    { label: "Follow-ups Sent", value: stats.followups, color: "text-purple-400" },
+    { label: "Replied", value: stats.replied, color: "text-emerald-400" },
+    { label: "No Reply", value: stats.noReply || 0, color: "text-rose-400" },
   ];
 
   return (
@@ -56,9 +53,19 @@ export default function EmailPanel() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h2 className="text-xl font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>Email Outreach</h2>
-          <p className="text-sm text-slate-400">Maton-powered campaign management</p>
+          <p className="text-sm text-slate-400">Send initial invitations via Gmail</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
+          <label className="text-xs text-slate-400">Batch size:</label>
+          <select
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:border-indigo-500/50"
+          >
+            {[5, 10, 20, 50].map((n) => (
+              <option key={n} value={n}>{n}</option>
+            ))}
+          </select>
           <button
             onClick={sendCampaign}
             disabled={sending}
@@ -68,17 +75,23 @@ export default function EmailPanel() {
               <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Sending...</>
             ) : "Send Campaign"}
           </button>
-          <button
-            onClick={sendFollowups}
-            disabled={followingUp}
-            className="px-4 py-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            {followingUp ? (
-              <><div className="w-4 h-4 border-2 border-purple-300/30 border-t-purple-300 rounded-full animate-spin" />Sending...</>
-            ) : "Send Follow-ups"}
-          </button>
         </div>
       </div>
+
+      {sendResult && (
+        <div className={`glass rounded-xl p-4 border ${sendResult.error ? "border-rose-500/30" : "border-emerald-500/30"}`}>
+          {sendResult.error ? (
+            <p className="text-sm text-rose-400">{sendResult.error}</p>
+          ) : (
+            <div className="text-sm text-slate-300">
+              <p><span className="text-emerald-400 font-medium">{sendResult.sent}</span> emails sent via Gmail.</p>
+              {sendResult.errors && (
+                <p className="text-rose-400 mt-1">{sendResult.errors.length} failed: {sendResult.errors.map((e) => e.email).join(", ")}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {statItems.map((item) => (
@@ -90,16 +103,22 @@ export default function EmailPanel() {
       </div>
 
       <div className="glass rounded-2xl p-5">
-        <h3 className="text-sm font-medium text-slate-300 mb-3">Email Template Preview</h3>
-        <div className="bg-white/[0.02] rounded-xl p-4 border border-white/5">
-          <p className="text-sm text-slate-300 mb-2"><strong className="text-white">Subject:</strong> Exclusive Invitation - Exhibition Booth Registration</p>
-          <div className="text-xs text-slate-400 space-y-2 leading-relaxed">
-            <p>Dear {"{{company_name}}"},</p>
-            <p>We are pleased to invite you to participate in our upcoming exhibition. As a leader in {"{{industry}}"}, your presence would be invaluable.</p>
-            <p>Secure your booth today and gain access to 500+ qualified buyers in the Malaysian market.</p>
-            <p>Click below to register and receive your unique QR code for instant check-in.</p>
-            <p className="text-indigo-400">[Register Now Button]</p>
-          </div>
+        <h3 className="text-sm font-medium text-slate-300 mb-3">Email Sequence Preview</h3>
+        <div className="space-y-3">
+          {[
+            { round: "Initial", subject: "Invitation to Exhibit at AgriMalaysia 2026", day: "Day 0", color: "border-indigo-500/30" },
+            { round: "Follow-up 1", subject: "Following up — AgriMalaysia 2026 Exhibition Booth", day: "Day 5", color: "border-purple-500/30" },
+            { round: "Follow-up 2", subject: "Last chance — AgriMalaysia 2026 booth spaces filling fast", day: "Day 12", color: "border-amber-500/30" },
+            { round: "Follow-up 3", subject: "Final update — AgriMalaysia 2026", day: "Day 20", color: "border-rose-500/30" },
+          ].map((e) => (
+            <div key={e.round} className={`bg-white/[0.02] rounded-xl p-4 border ${e.color}`}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-white">{e.round}</span>
+                <span className="text-xs text-slate-500">{e.day}</span>
+              </div>
+              <p className="text-sm text-slate-300"><strong className="text-white">Subject:</strong> {e.subject}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

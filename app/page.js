@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import StatusCard from "./components/StatusCard";
 import PipelineStrip from "./components/PipelineStrip";
+import PipelinePanel from "./components/PipelinePanel";
 import LeadsPanel from "./components/LeadsPanel";
 import EmailPanel from "./components/EmailPanel";
 import QRPanel from "./components/QRPanel";
@@ -17,6 +18,7 @@ export default function Home() {
     emailProgress: 0,
     followups: 0,
     registrations: 0,
+    stages: {},
   });
 
   useEffect(() => {
@@ -29,6 +31,7 @@ export default function Home() {
           emailProgress: data.emailsSent ? Math.round((data.emailsSent / Math.max(data.totalLeads, 1)) * 100) : 0,
           followups: data.followups || 0,
           registrations: data.registrations || 0,
+          stages: data.stages || {},
         });
       } catch {
         /* ignore */
@@ -40,7 +43,7 @@ export default function Home() {
   const tabMap = {
     leads: "leads",
     email: "email",
-    followup: "email",
+    pipeline: "pipeline",
     qr: "qr",
     video: "video",
   };
@@ -60,15 +63,15 @@ export default function Home() {
               <h1 className="text-2xl lg:text-3xl font-bold text-white" style={{ fontFamily: "var(--font-outfit)" }}>
                 Mission Control
               </h1>
-              <p className="text-slate-400 mt-1">Exhibition outreach pipeline overview</p>
+              <p className="text-slate-400 mt-1">AgriMalaysia 2026 — Exhibition outreach pipeline</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatusCard
-                title="Lead Scraper"
+                title="Verified Contacts"
                 value={stats.leads}
-                subtitle="Total leads collected"
-                icon="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                subtitle="From Google Sheet"
+                icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857"
                 color="indigo"
                 progress={stats.leads > 0 ? 100 : 0}
               />
@@ -96,15 +99,44 @@ export default function Home() {
               />
             </div>
 
+            {/* Pipeline stage summary */}
+            {stats.stages && Object.keys(stats.stages).length > 0 && (
+              <div className="glass rounded-2xl p-5">
+                <h3 className="text-sm font-medium text-slate-300 mb-3">Pipeline Status</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                  {[
+                    { key: "NEW", label: "New", color: "text-slate-400" },
+                    { key: "CONTACTED", label: "Contacted", color: "text-indigo-400" },
+                    { key: "REPLIED", label: "Replied", color: "text-emerald-400" },
+                    { key: "REGISTERED", label: "Registered", color: "text-amber-400" },
+                    { key: "BOOTH_CONFIRMED", label: "Confirmed", color: "text-green-400" },
+                    { key: "NO_REPLY", label: "No Reply", color: "text-rose-400" },
+                    { key: "NOT_INTERESTED", label: "Not Interested", color: "text-slate-500" },
+                  ].map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() => setActiveTab("pipeline")}
+                      className="bg-white/[0.02] rounded-xl p-3 text-center hover:bg-white/[0.04] transition-colors"
+                    >
+                      <p className={`text-xl font-bold ${s.color}`} style={{ fontFamily: "var(--font-outfit)" }}>
+                        {stats.stages[s.key] || 0}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">{s.label}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <PipelineStrip activeStage="leads" onStageClick={handleStageClick} />
 
             <div className="glass rounded-2xl p-5">
               <h3 className="text-sm font-medium text-slate-300 mb-3">Quick Actions</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {[
-                  { label: "Scrape Leads", tab: "leads", color: "from-indigo-500 to-indigo-600" },
+                  { label: "View Contacts", tab: "leads", color: "from-indigo-500 to-indigo-600" },
                   { label: "Send Emails", tab: "email", color: "from-purple-500 to-purple-600" },
-                  { label: "Follow Up", tab: "email", color: "from-amber-500 to-amber-600" },
+                  { label: "Pipeline", tab: "pipeline", color: "from-amber-500 to-amber-600" },
                   { label: "Register", tab: "qr", color: "from-emerald-500 to-emerald-600" },
                   { label: "Gen Video", tab: "video", color: "from-rose-500 to-rose-600" },
                   { label: "Boss Report", tab: "report", color: "from-cyan-500 to-cyan-600" },
@@ -122,6 +154,7 @@ export default function Home() {
           </div>
         )}
 
+        {activeTab === "pipeline" && <PipelinePanel />}
         {activeTab === "leads" && <LeadsPanel />}
         {activeTab === "email" && <EmailPanel />}
         {activeTab === "qr" && <QRPanel />}
